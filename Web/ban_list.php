@@ -119,25 +119,31 @@ if(!$user_site) {
                         "cn"            => $cn
                 );
                 // get previous offences if any
-				$query2   = mysql_query("SELECT count(player_id) as count FROM `".$config->db_prefix."_bans` WHERE player_id = '".$result->player_id."'") or die(mysql_error());
+				$query2   = mysql_query("SELECT count(player_id) as ban_count FROM `".$config->db_prefix."_bans` WHERE player_id = '".$result->player_id."'") or die(mysql_error());
                 while($result2 = mysql_fetch_object($query2)) {
-                        $ban_row["bancount"] = $result2->count;
+                        $ban_row["bancount"] = $result2->ban_count;
                 }
+				$queryX = mysql_query("SELECT count(player_id) as ban_count FROM `".$config->db_prefix."_bans` WHERE player_id = '".$result->player_id."' AND (ban_length > 5 OR ban_length = 0)") or die(mysql_error());
+				while($resultX = mysql_fetch_object($queryX)) {
+						$tmp_bancount = $resultX->ban_count;
+				}
+				
                 //if needed prune bans but after query to see it in the list once
                 if($config->auto_prune=="1") {
                         //first search for max offence bans
-                        if(($ban_row["bancount"]) >= $config->max_offences && $ban_row["ban_length"] >= "0") {
+                        if($tmp_bancount >= $config->max_offences && $ban_row["ban_length"] >= "0" && !(strlen(strstr($ban_row["ban_reason"],$config->max_offences_reason))>0)) {
                                 $ban_row["ban_length"] = "0";
-                                $ban_row["ban_reason"] = $config->max_offences_reason;
-                                $prune_query = mysql_query("UPDATE `".$config->db_prefix."_bans` SET `expired`=0,`ban_length`=0,`ban_reason`='".$config->max_offences_reason."' WHERE `bid`=".$result->bid);
-                                $prune_query = mysql_query("INSERT INTO `".$config->db_prefix."_bans_edit` (`bid`,`edit_time`,`admin_nick`,`edit_reason`) VALUES (
-                                                        '".$result->bid."',UNIX_TIMESTAMP(NOW()),'amxbans','".$config->max_offences_reason."')");
+								$new_reason = $ban_row["ban_reason"] . ' (' .$config->max_offences_reason.')';
+                                $ban_row["ban_reason"] = $new_reason;
+                                $prune_query = mysql_query("UPDATE `".$config->db_prefix."_bans` SET `expired`=0,`ban_length`=0,`ban_reason`='".$new_reason."' WHERE `bid`=".$result->bid);
+								$prune_query = mysql_query("INSERT INTO `".$config->db_prefix."_bans_edit` (`bid`,`edit_time`,`admin_nick`,`edit_reason`) VALUES (
+															'".$result->bid."',UNIX_TIMESTAMP(NOW()),'amxbans','".$new_reason."')");
                         }
                         //prune expired bans
                         if($ban_row["ban_end"] < time() && $ban_row["ban_length"] != "0") {
                                 $prune_query = mysql_query("UPDATE `".$config->db_prefix."_bans` SET `expired`=1 WHERE `bid`=".$ban_row["bid"]);
-                                $prune_query = mysql_query("INSERT INTO `".$config->db_prefix."_bans_edit` (`bid`,`edit_time`,`admin_nick`,`edit_reason`) VALUES (
-                                                                '".$result->bid."','".$ban_row["ban_end"]."','amxbans','Bantime expired')");
+								$prune_query = mysql_query("INSERT INTO `".$config->db_prefix."_bans_edit` (`bid`,`edit_time`,`admin_nick`,`edit_reason`) VALUES (
+																	'".$result->bid."','".$ban_row["ban_end"]."','amxbans','Bantime expired')");
                         }
                 }
                 if($result->server_ip=="") {
