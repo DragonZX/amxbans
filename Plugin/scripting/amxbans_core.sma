@@ -319,10 +319,20 @@ public adminSql()
 			ExecuteForward(MFHandle[Amxbans_Sql_Initialized],ret,info,g_dbPrefix)
 		}
 		g_bSqlInitialized=true 
-		
+		if (sql != Empty_Handle){
+			//Fix by EpicMorg: 
+			SQL_FreeHandle(sql)
+			server_print("[amxbans_core.amxx] [AMXBans] SQL Connection closed.")
+		} 
 		return PLUGIN_HANDLED
 	}
-	if(g_AdminsFromFile > 1) return PLUGIN_HANDLED
+	if(g_AdminsFromFile > 1){
+		if (sql != Empty_Handle){
+			//Fix by EpicMorg:  
+			SQL_FreeHandle(sql)
+			server_print("[amxbans_core.amxx] [AMXBans] SQL Connection closed.")
+		}
+		return PLUGIN_HANDLED
 	
 	ArrayClear(g_AdminNick)
 	ArrayClear(g_AdminUseStaticBantime)
