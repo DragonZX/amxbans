@@ -116,6 +116,7 @@ public plugin_init()
 	pcvar_show_prebanned 	=	register_cvar("amxbans_show_prebanned","1")
 	pcvar_show_prebanned_num =	register_cvar("amxbans_show_prebanned_num","2")
 	pcvar_default_banreason	=	register_cvar("amxbans_default_ban_reason","unknown")
+	pcvar_prefix = get_cvar_pointer("amx_sql_prefix");
 	
 	register_concmd("amx_ban", "cmdBan", ADMIN_BAN, "<steamID or nickname or #authid or IP> <time in mins> <reason>")
 	register_srvcmd("amx_ban", "cmdBan", -1, "<steamID or nickname or #authid or IP> <time in mins> <reason>")
@@ -164,70 +165,32 @@ public addMenus()
 	AddMenuItem(szKey,"amx_banhistorymenu",ADMIN_BAN,PLUGIN_NAME)
 }
 
-//forward from amxbans_core
-public amxbans_sql_initialized(Handle:sqlTuple,dbPrefix[])
-{
-	copy(g_dbPrefix,charsmax(g_dbPrefix),dbPrefix)
-	//db was already initialized, second init can be caused by a second forward from main plugin
-	//this should never happen!!
-	if(g_SqlX != Empty_Handle)
-	{
-		log_amx("[AMXBans Error] DB Info Tuple from amxbans_core initialized twice!!")
-		return PLUGIN_HANDLED
-	}
-	
-	SQL_SetAffinity("mysql")
-	g_SQLTuple = SQL_MakeStdTuple()
-	g_SqlX = SQL_Connect(info, errno, error, 127)
-	
-	if(g_SqlX==Empty_Handle)
-	{
-		log_amx("[AMXBans Error] DB Info Tuple from amxbans_main is empty! Trying to get a valid one")
-		new host[64], user[64], pass[64], db[64]
-
-		get_cvar_string("amx_sql_host", host, 63)
-		get_cvar_string("amx_sql_user", user, 63)
-		get_cvar_string("amx_sql_pass", pass, 63)
-		get_cvar_string("amx_sql_db", db, 63)
-		
-		g_SqlX = SQL_MakeDbTuple(host, user, pass, db)
-		
-		get_cvar_string("amx_sql_prefix",g_dbPrefix,charsmax(g_dbPrefix))
-	}
-	create_forwards()
-	set_task(0.1, "banmod_online")
-	set_task(0.2, "fetchReasons")
-	set_task(2.0, "addMenus")
-	
-	return PLUGIN_HANDLED
-}
-
-/*
 public plugin_cfg()
 {
-	//set_task(0.1, "sql_init")
+	set_task(0.1, "sql_init")
 }
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64]
-
-	get_cvar_string("amx_sql_host", host, 63)
-	get_cvar_string("amx_sql_user", user, 63)
-	get_cvar_string("amx_sql_pass", pass, 63)
-	get_cvar_string("amx_sql_db", db, 63)
+	new error[128], errno;
 	
-	get_cvar_string("amx_sql_prefix",g_dbPrefix,charsmax(g_dbPrefix))
-	//amxbans_get_db_prefix(g_dbPrefix,charsmax(g_dbPrefix))
+	SQL_SetAffinity("mysql")
+	g_SqlX = SQL_MakeStdTuple()
+	new Handle:temp = SQL_Connect(g_SqlX, errno, error, 127)
 	
-	g_SqlX = SQL_MakeDbTuple(host, user, pass, db)
+	if(temp==Empty_Handle)
+	{
+		server_print("[AMXBans] %L", LANG_SERVER, "SQL_CANT_CON", error)
+	}
+	SQL_FreeHandle(temp);
+	
+	get_pcvar_string(pcvar_prefix, g_dbPrefix, charsmax(g_dbPrefix));
 	
 	create_forwards()
 	set_task(0.1, "banmod_online")
 	set_task(0.2, "fetchReasons")
 	set_task(2.0, "addMenus")
 }
-*/
 
 //////////////////////////////////////////////////////////////////
 public get_higher_ban_time_admin_flag()

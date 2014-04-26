@@ -56,6 +56,7 @@ enum MFHandles
 	Player_Flagged,
 	Player_UnFlagged
 }
+
 new MFHandle[MFHandles];
 
 // For hudmessages
@@ -110,6 +111,7 @@ new pcvar_custom_statictime;
 new pcvar_show_prebanned;
 new pcvar_show_prebanned_num;
 new pcvar_default_banreason;
+new pcvar_prefix;
 
 /*****************************/
 

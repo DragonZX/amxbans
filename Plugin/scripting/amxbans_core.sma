@@ -79,7 +79,6 @@ enum MFHANDLE_TYPES {
 new MFHandle[MFHANDLE_TYPES]
 
 new Handle:info
-new bool:g_bSqlInitialized
 
 public plugin_init()
 {
@@ -152,7 +151,6 @@ public plugin_cfg()
 
 create_forwards()
 {
-	MFHandle[Amxbans_Sql_Initialized]=CreateMultiForward("amxbans_sql_initialized",ET_IGNORE,FP_CELL,FP_STRING)
 	MFHandle[Admin_Connect]=CreateMultiForward("amxbans_admin_connect",ET_IGNORE,FP_CELL)
 	MFHandle[Admin_Disconnect]=CreateMultiForward("amxbans_admin_disconnect",ET_IGNORE,FP_CELL)
 }
@@ -201,7 +199,7 @@ public delayed_load()
 
 	new i=0;
 	
-	while (curMap[i] != '_' && curMap[i++] != '^0');
+	while (curMap[i] != '_' && curMap[i++] != '^0') {}
 	
 	if (curMap[i]=='_')
 	{
@@ -322,12 +320,6 @@ public adminSql()
 			accessUser(pv, name)
 		}
 		
-		if(!g_bSqlInitialized)
-		{
-			new ret
-			ExecuteForward(MFHandle[Amxbans_Sql_Initialized],ret,info,g_dbPrefix)
-		}
-		g_bSqlInitialized=true 
 		if (sql != Empty_Handle)
 		{
 			//Fix by EpicMorg: 
@@ -345,6 +337,7 @@ public adminSql()
 			server_print("[amxbans_core.amxx] [AMXBans] SQL Connection closed.")
 		}
 		return PLUGIN_HANDLED
+	}
 	
 	ArrayClear(g_AdminNick)
 	ArrayClear(g_AdminUseStaticBantime)
@@ -423,14 +416,6 @@ public adminSql()
 	
 	SQL_FreeHandle(query)
 	SQL_FreeHandle(sql)
-	
-	
-	if(!g_bSqlInitialized)
-	{
-		new ret
-		ExecuteForward(MFHandle[Amxbans_Sql_Initialized],ret,info,g_dbPrefix)
-	}
-	g_bSqlInitialized=true
 	
 	new players[32], num, pv
 	new name[32]
