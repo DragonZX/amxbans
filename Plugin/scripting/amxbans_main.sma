@@ -1,19 +1,45 @@
-/*
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * 
+ * AMX Bans - http://www.amxbans.net
+ *  Plugin - Main
+ * 
+ * Copyright (C) 2014  Ryan "YamiKaitou" LeBlanc
+ * Copyright (C) 2009, 2010  Thomas Kurz
+ * Copyright (C) 2003, 2004  Ronald Renes / Jeroen de Rover
+ * Forked from "Admin Base (SQL)" in AMX Mod X (version 1.8.1)
+ * 
+ * 
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; either version 2 of the License, or (at
+ *  your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ *  In addition, as a special exception, the author gives permission to
+ *  link the code of this program with the Half-Life Game Engine ("HL
+ *  Engine") and Modified Game Libraries ("MODs") developed by Valve,
+ *  L.L.C ("Valve"). You must obey the GNU General Public License in all
+ *  respects for all of the code used other than the HL Engine and MODs
+ *  from Valve. If you modify this file, you may extend this exception
+ *  to your version of the file, but you are not obligated to do so. If
+ *  you do not wish to do so, delete this exception statement from your
+ *  version.
+ * 
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-	AMXBans, managing bans for Half-Life modifications
-	Copyright (C) 2003, 2004  Ronald Renes / Jeroen de Rover
-	
-	Copyright (C) 2009, 2010  Thomas Kurz
-
-	Amxbans Main Plugin
-*/
-// Rev 2010/04/13
-
-new const AUTHOR[] = "HLXBans Dev Team"
+new const AUTHOR[] = "YamiKaitou"
 new const PLUGIN_NAME[] = "AMXBans Main"
-new const VERSION[] = "6.0.3" // This is used in the plugins name
+new const VERSION[] = "6.0.5-dev" // This is used in the plugins name
 
-new const amxbans_version[] = "6.0.3" // This is for the DB
+new const amxbans_version[] = "6.0.4" // This is for the DB
 
 #include <amxmodx>
 #include <amxmisc>
@@ -43,7 +69,8 @@ new const amxbans_version[] = "6.0.3" // This is for the DB
 #pragma dynamic 16384 		// Give the plugin some extra memory to use
 
 
-public plugin_init() {
+public plugin_init()
+{
 	register_plugin(PLUGIN_NAME, VERSION, AUTHOR)
 	register_cvar("amxbans_version", VERSION, FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_UNLOGGED|FCVAR_SPONLY)
 	
@@ -118,12 +145,16 @@ public plugin_init() {
 	
 	//color_chat_init()
 }
-create_forwards() {
+
+create_forwards()
+{
 	MFHandle[Ban_MotdOpen]=CreateMultiForward("amxbans_ban_motdopen",ET_IGNORE,FP_CELL)
 	MFHandle[Player_Flagged]=CreateMultiForward("amxbans_player_flagged",ET_IGNORE,FP_CELL,FP_CELL,FP_STRING)
 	MFHandle[Player_UnFlagged]=CreateMultiForward("amxbans_player_unflagged",ET_IGNORE,FP_CELL)
 }
-public addMenus() {
+
+public addMenus()
+{
 	new szKey[64]
 	format(szKey,charsmax(szKey),"%L",LANG_SERVER,"ADMMENU_FLAGGING")
 	AddMenuItem(szKey,"amx_flaggingmenu",ADMIN_BAN,PLUGIN_NAME)
@@ -132,21 +163,25 @@ public addMenus() {
 	format(szKey,charsmax(szKey),"%L",LANG_SERVER,"ADMMENU_HISTORY")
 	AddMenuItem(szKey,"amx_banhistorymenu",ADMIN_BAN,PLUGIN_NAME)
 }
+
 //forward from amxbans_core
-public amxbans_sql_initialized(Handle:sqlTuple,dbPrefix[]) {
-	
+public amxbans_sql_initialized(Handle:sqlTuple,dbPrefix[])
+{
 	copy(g_dbPrefix,charsmax(g_dbPrefix),dbPrefix)
 	//db was already initialized, second init can be caused by a second forward from main plugin
 	//this should never happen!!
-	if(g_SqlX != Empty_Handle) {
+	if(g_SqlX != Empty_Handle)
+	{
 		log_amx("[AMXBans Error] DB Info Tuple from amxbans_core initialized twice!!")
 		return PLUGIN_HANDLED
 	}
 	
-	g_SqlX=sqlTuple
-	if ( get_pcvar_num(pcvar_debug) >= 1 )
-		log_amx("[AMXBans] Received DB Info Tuple from amxbans_core: %d | %s", sqlTuple,g_dbPrefix)
-	if(g_SqlX==Empty_Handle) {
+	SQL_SetAffinity("mysql")
+	g_SQLTuple = SQL_MakeStdTuple()
+	g_SqlX = SQL_Connect(info, errno, error, 127)
+	
+	if(g_SqlX==Empty_Handle)
+	{
 		log_amx("[AMXBans Error] DB Info Tuple from amxbans_main is empty! Trying to get a valid one")
 		new host[64], user[64], pass[64], db[64]
 
@@ -166,11 +201,15 @@ public amxbans_sql_initialized(Handle:sqlTuple,dbPrefix[]) {
 	
 	return PLUGIN_HANDLED
 }
+
 /*
-public plugin_cfg() {
+public plugin_cfg()
+{
 	//set_task(0.1, "sql_init")
 }
-public sql_init() {
+
+public sql_init()
+{
 	new host[64], user[64], pass[64], db[64]
 
 	get_cvar_string("amx_sql_host", host, 63)
@@ -189,20 +228,26 @@ public sql_init() {
 	set_task(2.0, "addMenus")
 }
 */
+
 //////////////////////////////////////////////////////////////////
-public get_higher_ban_time_admin_flag() {
+public get_higher_ban_time_admin_flag()
+{
 	new flags[24]
 	get_pcvar_string(pcvar_higher_ban_time_admin, flags, 23)
 	
 	return(read_flags(flags))
 }
-public get_admin_mole_access_flag() {
+
+public get_admin_mole_access_flag()
+{
 	new flags[24]
 	get_pcvar_string(pcvar_admin_mole_access, flags, 23)
 	
 	return(read_flags(flags))
 }
-public delayed_kick(player_id) {
+
+public delayed_kick(player_id)
+{
 	
 	player_id-=200
 	new userid = get_user_userid(player_id)
@@ -220,10 +265,14 @@ public delayed_kick(player_id) {
 	
 	return PLUGIN_CONTINUE
 }
-public event_new_round() {
+
+public event_new_round()
+{
 	new plnum=get_maxplayers()
-	for(new i=1;i <= plnum; i++) {
-		if(g_nextround_kick[i]) {
+	for(new i=1;i <= plnum; i++)
+	{
+		if(g_nextround_kick[i])
+		{
 			if ( get_pcvar_num(pcvar_debug) >= 1 )
 				log_amx("[AMXBans] New Round Kick ID: <%d> | bid:%d",i,g_nextround_kick_bid[i])
 			
@@ -233,21 +282,29 @@ public event_new_round() {
 		}
 	}
 }
+
 /*********  Error handler  ***************/
-MySqlX_ThreadError(szQuery[], error[], errnum, failstate, id) {
-	if (failstate == TQUERY_CONNECT_FAILED) {
+MySqlX_ThreadError(szQuery[], error[], errnum, failstate, id)
+{
+	if (failstate == TQUERY_CONNECT_FAILED)
+	{
 		log_amx("%L", LANG_SERVER, "TCONNECTION_FAILED")
-	} else if (failstate == TQUERY_QUERY_FAILED) {
+	}
+	else if (failstate == TQUERY_QUERY_FAILED)
+	{
 		log_amx("%L", LANG_SERVER, "TQUERY_FAILED")
 	}
 	log_amx("%L", LANG_SERVER, "TQUERY_ERROR", id)
 	log_amx("%L", LANG_SERVER, "TQUERY_MSG", error, errnum)
 	log_amx("%L", LANG_SERVER, "TQUERY_STATEMENT", szQuery)
 }
+
 /*********    client functions     ************/
-public client_authorized(id) {
+public client_authorized(id)
+{
 	//fix for the invalid tuple error at mapchange, only a fast fix now
-	if(g_SqlX==Empty_Handle) {
+	if(g_SqlX==Empty_Handle)
+	{
 		set_task(2.0,"client_authorized",id)
 		return PLUGIN_HANDLED
 	}
@@ -255,9 +312,12 @@ public client_authorized(id) {
 	check_player(id)
 	return PLUGIN_CONTINUE
 }
-public client_putinserver(id) {
+
+public client_putinserver(id)
+{
 	//fix for the invalid tuple error at mapchange, only a fast fix now
-	if(g_SqlX==Empty_Handle) {
+	if(g_SqlX==Empty_Handle)
+	{
 		set_task(5.0,"client_putinserver",id)
 		return PLUGIN_HANDLED
 	}
@@ -267,14 +327,19 @@ public client_putinserver(id) {
 	disconnect_remove_player(id)
 	return PLUGIN_CONTINUE
 }
-public client_disconnect(id) {
+
+public client_disconnect(id)
+{
 	
 	g_being_banned[id]=false
 	
-	if(!g_kicked_by_amxbans[id]) {
+	if(!g_kicked_by_amxbans[id])
+	{
 		//only add players to disconnect list if not kicked by amxbans
 		disconnected_add_player(id)
-	} else if(g_being_flagged[id]) {
+	}
+	else if(g_being_flagged[id])
+	{
 		// if kicked by amxbans maybe remove the flagged, not added yet
 		/*****///remove_flagged_by_steam(0,id,0)
 	}
@@ -283,13 +348,16 @@ public client_disconnect(id) {
 	g_being_flagged[id]=false
 	g_nextround_kick[id]=false
 }
+
 /*********    timecmd functions     ************/
-public setHighBantimes() {
+public setHighBantimes()
+{
 	new arg[32]
 	new argc = read_argc() - 1
 	g_highbantimesnum = argc
 
-	if(argc < 1 || argc > 14) {
+	if(argc < 1 || argc > 14)
+	{
 		log_amx("[AMXBANS] You have more than 14 or less than 1 bantimes set in amx_sethighbantimes")
 		log_amx("[AMXBANS] Loading default bantimes")
 		loadDefaultBantimes(1)
@@ -299,29 +367,40 @@ public setHighBantimes() {
 
 	new i = 0
 	new num[32], flag[32]
-	while (i < argc)	{
+	while (i < argc)
+	{
 		read_argv(i + 1, arg, 31)
 		parse(arg, num, 31, flag, 31)
 
-		if(equali(flag, "m")) { 
+		if(equali(flag, "m"))
+		{ 
 			g_HighBanMenuValues[i] = str_to_num(num)
-		} else if(equali(flag, "h")) {
+		}
+		else if(equali(flag, "h"))
+		{
 			g_HighBanMenuValues[i] = (str_to_num(num) * 60)
-		} else if(equali(flag, "d")) {
+		}
+		else if(equali(flag, "d"))
+		{
 			g_HighBanMenuValues[i] = (str_to_num(num) * 1440)
-		} else if(equali(flag, "w")) {
+		}
+		else if(equali(flag, "w"))
+		{
 			g_HighBanMenuValues[i] = (str_to_num(num) * 10080)
 		}
 		i++
 	}
 	return PLUGIN_HANDLED
 }
-public setLowBantimes() {
+
+public setLowBantimes()
+{
 	new arg[32]
 	new argc = read_argc() - 1
 	g_lowbantimesnum = argc
 	
-	if(argc < 1 || argc > 14) {
+	if(argc < 1 || argc > 14)
+	{
 		log_amx("[AMXBANS] You have more than 14 or less than 1 bantimes set in amx_setlowbantimes")
 		log_amx("[AMXBANS] Loading default bantimes")
 		loadDefaultBantimes(2)
@@ -331,28 +410,39 @@ public setLowBantimes() {
 
 	new i = 0
 	new num[32], flag[32]
-	while (i < argc) {
+	while (i < argc)
+	{
 		read_argv(i + 1, arg, 31)
 		parse(arg, num, 31, flag, 31)
 
-		if(equali(flag, "m")) { 
+		if(equali(flag, "m"))
+		{ 
 			g_LowBanMenuValues[i] = str_to_num(num)
-		} else if(equali(flag, "h")) {
+		}
+		else if(equali(flag, "h"))
+		{
 			g_LowBanMenuValues[i] = (str_to_num(num) * 60)
-		} else if(equali(flag, "d")) {
+		}
+		else if(equali(flag, "d"))
+		{
 			g_LowBanMenuValues[i] = (str_to_num(num) * 1440)
-		} else if(equali(flag, "w")) {
+		}
+		else if(equali(flag, "w"))
+		{
 			g_LowBanMenuValues[i] = (str_to_num(num) * 10080)
 		}
 		i++
 	}
 	return PLUGIN_HANDLED
 }
-public setFlagTimes() {
+
+public setFlagTimes()
+{
 	new arg[32]
 	new argc = read_argc() - 1
 	g_flagtimesnum = argc
-	if(argc < 1 || argc > 14) {
+	if(argc < 1 || argc > 14)
+	{
 		log_amx("[AMXBANS] You have more than 14 or less than 1 flagtimes set in amx_setflagtimes")
 		log_amx("[AMXBANS] Loading default flagtimes")
 		loadDefaultBantimes(3)
@@ -362,24 +452,34 @@ public setFlagTimes() {
 	
 	new i = 0
 	new num[32], flag[32]
-	while (i < argc) {
+	while (i < argc)
+	{
 		read_argv(i + 1, arg, 31)
 		parse(arg, num, 31, flag, 31)
 
-		if(equali(flag, "m")) { 
+		if(equali(flag, "m"))
+		{ 
 			g_FlagMenuValues[i] = str_to_num(num)
-		} else if(equali(flag, "h")) {
+		}
+		else if(equali(flag, "h"))
+		{
 			g_FlagMenuValues[i] = (str_to_num(num) * 60)
-		} else if(equali(flag, "d")) {
+		}
+		else if(equali(flag, "d"))
+		{
 			g_FlagMenuValues[i] = (str_to_num(num) * 1440)
-		} else if(equali(flag, "w")) {
+		}
+		else if(equali(flag, "w"))
+		{
 			g_FlagMenuValues[i] = (str_to_num(num) * 10080)
 		}
 		i++
 	}
 	return PLUGIN_HANDLED
 }
-loadDefaultBantimes(num) {
+
+loadDefaultBantimes(num)
+{
 	if(num == 1 || num == 0)
 		server_cmd("amx_sethighbantimes 5 60 240 600 6000 0")
 	if(num == 2 || num == 0)
@@ -387,6 +487,7 @@ loadDefaultBantimes(num) {
 	if(num == 3 || num == 0)
 		server_cmd("amx_setflagtimes 60 240 600 1440 10080 40320 90720 0")
 }
+
 /*********    mysql escape functions     ************/
 mysql_escape_string(const source[],dest[],len)
 {
@@ -399,12 +500,16 @@ mysql_escape_string(const source[],dest[],len)
 	replace_all(dest,len,"'","\'");
 	replace_all(dest,len,"^"","\^"");
 }
-mysql_get_username_safe(id,dest[],len) {
+
+mysql_get_username_safe(id,dest[],len)
+{
 	new name[128]
 	get_user_name(id,name,127)
 	mysql_escape_string(name,dest,len)
 }
-mysql_get_servername_safe(dest[],len) {
+
+mysql_get_servername_safe(dest[],len)
+{
 	new server_name[256]
 	get_cvar_string("hostname", server_name, charsmax(server_name))
 	mysql_escape_string(server_name,dest,len)
