@@ -46,7 +46,7 @@
 		$steamid=sql_safe($_POST["steamid"]);
 		$nickname=sql_safe($_POST["nickname"]);
 		
-		if(!validate_value($username,"name",$error,3,31,"USERNAME")) $user_msg[]=$error;
+		if(!validate_value($username,"name",$error,1,31,"USERNAME")) $user_msg[]=$error;
 		if(strrpos($flags,"a")===true || strrpos($flags,"e")===false) if(!validate_value($password,"name",$error,4,31,"PASSWORD")) $user_msg[]=$error;
 		if(!validate_value($access,"amxxaccess",$error)) $user_msg[]=$error;
 		if(!validate_value($flags,"amxxflags",$error)) $user_msg[]=$error;
@@ -58,7 +58,7 @@
 		} else if(strrpos($flags,"d")!==false) { //ip
 			if(!validate_value($steamid,"ip",$error)) $user_msg[]=$error;
 		}
-		if(!validate_value($nickname,"name",$error,3,31,"NICKNAME")) $user_msg[]=$error;
+		if(!validate_value($nickname,"name",$error,1,31,"NICKNAME")) $user_msg[]=$error;
 	}
 	//amxadmin edit
 	if(isset($_POST["save"]) && $_SESSION["loggedin"]) {
