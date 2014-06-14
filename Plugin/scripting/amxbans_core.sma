@@ -1,42 +1,38 @@
-/* AMX Mod X script.
-*   Admin Base Plugin
-*
-* by the AMX Mod X Development Team
-*  originally developed by OLO
-*
-* This file is part of AMX Mod X.
-*
-*
-*  This program is free software; you can redistribute it and/or modify it
-*  under the terms of the GNU General Public License as published by the
-*  Free Software Foundation; either version 2 of the License, or (at
-*  your option) any later version.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-*  General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with this program; if not, write to the Free Software Foundation,
-*  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-*
-*  In addition, as a special exception, the author gives permission to
-*  link the code of this program with the Half-Life Game Engine ("HL
-*  Engine") and Modified Game Libraries ("MODs") developed by Valve,
-*  L.L.C ("Valve"). You must obey the GNU General Public License in all
-*  respects for all of the code used other than the HL Engine and MODs
-*  from Valve. If you modify this file, you may extend this exception
-*  to your version of the file, but you are not obligated to do so. If
-*  you do not wish to do so, delete this exception statement from your
-*  version.
-*
-*  Modified for AMXBans 6.0
-*
-*  Based on admins plugin v1.8.1.3746
-*
-*  Rev 2010/04/13
-*/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * 
+ * AMX Bans - http://www.amxbans.net
+ *  Plugin - Core
+ * 
+ * Copyright (C) 2014  Ryan "YamiKaitou" LeBlanc
+ * Copyright (C) 2009, 2010  Thomas Kurz
+ * Forked from "Admin Base (SQL)" in AMX Mod X (version 1.8.1)
+ * 
+ * 
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; either version 2 of the License, or (at
+ *  your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ *  In addition, as a special exception, the author gives permission to
+ *  link the code of this program with the Half-Life Game Engine ("HL
+ *  Engine") and Modified Game Libraries ("MODs") developed by Valve,
+ *  L.L.C ("Valve"). You must obey the GNU General Public License in all
+ *  respects for all of the code used other than the HL Engine and MODs
+ *  from Valve. If you modify this file, you may extend this exception
+ *  to your version of the file, but you are not obligated to do so. If
+ *  you do not wish to do so, delete this exception statement from your
+ *  version.
+ * 
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <amxmodx>
 #include <amxmisc>
@@ -45,13 +41,13 @@
 new AdminCount;
 
 new PLUGINNAME[] 	= "AMXBans Core"
-new PLUGINVERSION[] 	= "6.0.3"
+new PLUGINVERSION[] 	= "6.0.5-dev"
 
 #define ADMIN_LOOKUP	(1<<0)
 #define ADMIN_NORMAL	(1<<1)
-#define ADMIN_STEAM	(1<<2)
+#define ADMIN_STEAM		(1<<2)
 #define ADMIN_IPADDR	(1<<3)
-#define ADMIN_NAME	(1<<4)
+#define ADMIN_NAME		(1<<4)
 
 new g_cmdLoopback[16]
 new bool:g_CaseSensitiveName[33];
@@ -62,9 +58,14 @@ new amx_password_field;
 new amx_default_access;
 
 //amxbans
-new pcvarip,pcvarprefix,pcvaradminsfile
-new g_ServerAddr[100],g_dbPrefix[32],g_AdminsFromFile
-new g_szAdminNick[33][32],g_iAdminUseStaticBantime[33]
+new pcvarip
+new pcvarprefix
+new pcvaradminsfile
+new g_ServerAddr[100]
+new g_dbPrefix[32]
+new g_AdminsFromFile
+new g_szAdminNick[33][32]
+new g_iAdminUseStaticBantime[33]
 new Array:g_AdminNick
 new Array:g_AdminUseStaticBantime
 
@@ -78,11 +79,10 @@ enum MFHANDLE_TYPES {
 new MFHandle[MFHANDLE_TYPES]
 
 new Handle:info
-new bool:g_bSqlInitialized
 
 public plugin_init()
 {
-	register_plugin(PLUGINNAME, PLUGINVERSION, "HLXBans Dev Team")
+	register_plugin(PLUGINNAME, PLUGINVERSION, "YamiKaitou")
 
 	register_dictionary("admin.txt")
 	register_dictionary("common.txt")
@@ -136,29 +136,36 @@ public plugin_init()
 	//server_cmd("exec %s/amxbans.cfg", configsDir)
 
 }
+
 public client_connect(id)
 {
 	g_CaseSensitiveName[id] = false;
 }
-public plugin_cfg() {
+
+public plugin_cfg()
+{
 	//fixx to be sure cfgs are loaded
 	create_forwards()
 	set_task(0.1,"delayed_plugin_cfg")
 }
-create_forwards() {
-	MFHandle[Amxbans_Sql_Initialized]=CreateMultiForward("amxbans_sql_initialized",ET_IGNORE,FP_CELL,FP_STRING)
+
+create_forwards()
+{
 	MFHandle[Admin_Connect]=CreateMultiForward("amxbans_admin_connect",ET_IGNORE,FP_CELL)
 	MFHandle[Admin_Disconnect]=CreateMultiForward("amxbans_admin_disconnect",ET_IGNORE,FP_CELL)
 }
+
 public delayed_plugin_cfg()
 {
 	//check if amxbans plugins are the first plugins and default admin plugins are disabled
 	//added for admins who cant read the docs
-	if(find_plugin_byfile("admin.amxx") != INVALID_PLUGIN_ID) {
+	if(find_plugin_byfile("admin.amxx") != INVALID_PLUGIN_ID)
+	{
 		log_amx("[AMXBans] WARNING: admin.amxx plugin running! stopped.")
 		pause("acd","admin.amxx")
 	}
-	if(find_plugin_byfile("admin_sql.amxx") != INVALID_PLUGIN_ID) {
+	if(find_plugin_byfile("admin_sql.amxx") != INVALID_PLUGIN_ID)
+	{
 		log_amx("[AMXBans] WARNING: admin_sql.amxx plugin running! stopped.")
 		pause("acd","admin_sql.amxx")
 	}
@@ -169,7 +176,8 @@ public delayed_plugin_cfg()
 	get_pcvar_string(pcvarip,g_ServerAddr,charsmax(g_ServerAddr))
 	g_AdminsFromFile=get_pcvar_num(pcvaradminsfile)
 	
-	if(strlen(g_ServerAddr) < 9) {
+	if(strlen(g_ServerAddr) < 9)
+	{
 		new ip[32]
 		get_user_ip(0,ip,31)
 		formatex(g_ServerAddr,charsmax(g_ServerAddr),"%s",ip)
@@ -191,7 +199,7 @@ public delayed_load()
 
 	new i=0;
 	
-	while (curMap[i] != '_' && curMap[i++] != '^0') {/*do nothing*/}
+	while (curMap[i] != '_' && curMap[i++] != '^0') {}
 	
 	if (curMap[i]=='_')
 	{
@@ -278,7 +286,6 @@ loadSettings(szFilename[])
 	return 1;
 }
 
-
 public adminSql()
 {
 	new table[32], error[128], errno
@@ -313,16 +320,24 @@ public adminSql()
 			accessUser(pv, name)
 		}
 		
-		if(!g_bSqlInitialized)
+		if (sql != Empty_Handle)
 		{
-			new ret
-			ExecuteForward(MFHandle[Amxbans_Sql_Initialized],ret,info,g_dbPrefix)
-		}
-		g_bSqlInitialized=true 
-		
+			//Fix by EpicMorg: 
+			SQL_FreeHandle(sql)
+			server_print("[amxbans_core.amxx] [AMXBans] SQL Connection closed.")
+		} 
 		return PLUGIN_HANDLED
 	}
-	if(g_AdminsFromFile > 1) return PLUGIN_HANDLED
+	if(g_AdminsFromFile > 1)
+	{
+		if (sql != Empty_Handle)
+		{
+			//Fix by EpicMorg:  
+			SQL_FreeHandle(sql)
+			server_print("[amxbans_core.amxx] [AMXBans] SQL Connection closed.")
+		}
+		return PLUGIN_HANDLED
+	}
 	
 	ArrayClear(g_AdminNick)
 	ArrayClear(g_AdminUseStaticBantime)
@@ -342,7 +357,8 @@ public adminSql()
 	SQL_Execute(query)
 //
 	
-	if(SQL_NumRows(query)) {
+	if(SQL_NumRows(query))
+	{
 		/** do this incase people change the query order and forget to modify below */
 		new qcolAuth = SQL_FieldNameToNum(query, "steamid")
 		new qcolPass = SQL_FieldNameToNum(query, "password")
@@ -401,13 +417,6 @@ public adminSql()
 	SQL_FreeHandle(query)
 	SQL_FreeHandle(sql)
 	
-	
-	if(!g_bSqlInitialized) {
-		new ret
-		ExecuteForward(MFHandle[Amxbans_Sql_Initialized],ret,info,g_dbPrefix)
-	}
-	g_bSqlInitialized=true
-	
 	new players[32], num, pv
 	new name[32]
 	get_players(players, num)
@@ -420,7 +429,9 @@ public adminSql()
 	
 	return PLUGIN_HANDLED
 }
-public plugin_end() {
+
+public plugin_end()
+{
 	if(info != Empty_Handle) SQL_FreeHandle(info)
 }
 
@@ -688,13 +699,17 @@ public client_infochanged(id)
 	}
 	return PLUGIN_CONTINUE
 }
-public client_disconnect(id) {
-	if(g_isAdmin[id]) {
+
+public client_disconnect(id)
+{
+	if(g_isAdmin[id])
+	{
 		new ret
 		ExecuteForward(MFHandle[Admin_Disconnect],ret,id)
 	}
 	g_isAdmin[id]=false
 }
+
 public ackSignal(id)
 {
 	server_cmd("kick #%d ^"%L^"", get_user_userid(id), id, "NO_ENTRY")
@@ -713,25 +728,32 @@ public client_putinserver(id)
 }
 
 //natives
-public plugin_natives() {
+public plugin_natives()
+{
 	register_library("AMXBansCore")
 	
 	register_native("amxbans_get_db_prefix","native_amxbans_get_prefix")
 	register_native("amxbans_get_admin_nick","native_amxbans_get_nick")
 	register_native("amxbans_get_static_bantime","native_amxbans_static_bantime")
 }
-public native_amxbans_get_prefix() {
+
+public native_amxbans_get_prefix()
+{
 	new len= get_param(2)
 	set_array(1,g_dbPrefix,len)
 }
-public native_amxbans_get_nick() {
+
+public native_amxbans_get_nick()
+{
 	
 	new id = get_param(1)
 	new len= get_param(3)
 	
 	set_array(2,g_szAdminNick[id],len)
 }
-public native_amxbans_static_bantime() {
+
+public native_amxbans_static_bantime()
+{
 	new id = get_param(1)
 	if(get_cvar_num("amxbans_debug") >= 3) log_amx("[AMXBans Core] Native static bantime: id: %d | result: %d",id,g_iAdminUseStaticBantime[id])
 	return g_iAdminUseStaticBantime[id]
