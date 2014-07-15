@@ -34,6 +34,9 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define PLUGINNAME "AMXBans Flagged"
+#define PLUGINAUTHOR "YamiKaitou"
+new const PLUGINVERSION[] = "6.dev";
 
 /*
 ^x01 is Yellow
@@ -46,16 +49,12 @@
 #include "include/amxbans_main.inc"
 //#include "amxbans/color_chat.inl"
 
-#define PLUGIN "AMXBans Flagged"
-#define VERSION "6.0.5-dev"
-#define AUTHOR "YamiKaitou"
-
 new authid[33][35],ip[33][22],reason[33][100]//,Float:left[33]
 new flagged_end[33]
 new g_maxplayers
 
 public plugin_init() {
-	register_plugin(PLUGIN, VERSION, AUTHOR)
+	register_plugin(PLUGINNAME, PLUGINVERSION, PLUGINAUTHOR);
 	g_maxplayers=get_maxplayers()
 //	color_chat_init()
 	register_dictionary("amxbans.txt")

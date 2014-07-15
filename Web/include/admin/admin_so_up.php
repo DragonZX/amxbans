@@ -27,10 +27,7 @@ if(!$_SESSION["loggedin"]) {
 $admin_site="up";
 $title2 ="_TITLEUPDATE";
 
-$update_ip="amxbans.de"; 
-$update_user="amxbans_vcheck";
-$update_pw="";
-$update_db="amxbans_version";
+$update_url = "http://www.amxbans.net/version.php";
 
 
 //get version from servers
@@ -47,7 +44,7 @@ while($result = mysql_fetch_object($query)) {
 $smarty->assign("server_count",$server_count);
 $smarty->assign("version_server",$version_server);
 
-
+/*
 //get versions from update db
 @$mysql_upd = mysql_connect($update_ip,$update_user,$update_pw) or $error[]="_UPD_CONNECT_ERROR";
 if($mysql_upd) {
@@ -80,5 +77,9 @@ if($mysql_upd) {
 	}
 	mysql_close($mysql_upd);
 }
+*/
+//get versions from update url
+$smarty->assign("version_latest", file_get_contents($update_url));
+
 $smarty->assign("error",$error);
 ?>

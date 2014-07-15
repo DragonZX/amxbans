@@ -34,22 +34,21 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define PLUGINNAME "AMXBans Flagged"
+#define PLUGINAUTHOR "YamiKaitou"
+new const PLUGINVERSION[] = "6.dev";
 
 #include <amxmodx>
 #include <fakemeta>
 #include <fun>
 #include "include/amxbans_main.inc"
 
-#define PLUGIN "AMXBans Freeze"
-#define VERSION "6.0.5-dev"
-#define AUTHOR "YamiKaitou"
-
 new bool:g_frozen[33]
 new pcvar_mode
 new mode
 
 public plugin_init() {
-	register_plugin(PLUGIN, VERSION, AUTHOR)
+	register_plugin(PLUGINNAME, PLUGINVERSION, PLUGINAUTHOR);
 	pcvar_mode=register_cvar("amxbans_freeze_mode","abcd")
 	register_clcmd("say","handle_say")
 	register_clcmd("say_team","handle_say")

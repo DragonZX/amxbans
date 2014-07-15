@@ -35,11 +35,9 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-new const AUTHOR[] = "YamiKaitou"
-new const PLUGIN_NAME[] = "AMXBans Main"
-new const VERSION[] = "6.0.5-dev" // This is used in the plugins name
-
-new const amxbans_version[] = "6.0.4" // This is for the DB
+#define PLUGINNAME "AMXBans Main"
+#define PLUGINAUTHOR "YamiKaitou"
+new const PLUGINVERSION[] = "6.dev";
 
 #include <amxmodx>
 #include <amxmisc>
@@ -71,8 +69,8 @@ new const amxbans_version[] = "6.0.4" // This is for the DB
 
 public plugin_init()
 {
-	register_plugin(PLUGIN_NAME, VERSION, AUTHOR)
-	register_cvar("amxbans_version", VERSION, FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_UNLOGGED|FCVAR_SPONLY)
+	register_plugin(PLUGINNAME, PLUGINVERSION, PLUGINAUTHOR)
+	register_cvar("amxbans_version", PLUGINVERSION, FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_UNLOGGED|FCVAR_SPONLY)
 	
 	register_dictionary("amxbans.txt")
 	register_dictionary("common.txt")
@@ -158,11 +156,11 @@ public addMenus()
 {
 	new szKey[64]
 	format(szKey,charsmax(szKey),"%L",LANG_SERVER,"ADMMENU_FLAGGING")
-	AddMenuItem(szKey,"amx_flaggingmenu",ADMIN_BAN,PLUGIN_NAME)
+	AddMenuItem(szKey,"amx_flaggingmenu",ADMIN_BAN,PLUGINNAME)
 	format(szKey,charsmax(szKey),"%L",LANG_SERVER,"ADMMENU_DISCONNECTED")
-	AddMenuItem(szKey,"amx_bandisconnectedmenu",ADMIN_BAN,PLUGIN_NAME)
+	AddMenuItem(szKey,"amx_bandisconnectedmenu",ADMIN_BAN,PLUGINNAME)
 	format(szKey,charsmax(szKey),"%L",LANG_SERVER,"ADMMENU_HISTORY")
-	AddMenuItem(szKey,"amx_banhistorymenu",ADMIN_BAN,PLUGIN_NAME)
+	AddMenuItem(szKey,"amx_banhistorymenu",ADMIN_BAN,PLUGINNAME)
 }
 
 public plugin_cfg()

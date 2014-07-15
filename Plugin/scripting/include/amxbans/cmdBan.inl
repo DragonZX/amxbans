@@ -595,8 +595,8 @@ public _select_amxbans_motd(failstate, Handle:query, error[], errnum, data[], si
 			ExecuteForward(MFHandle[Ban_MotdOpen],ret,player)
 	
 			new motdTitle[64]
-			formatex(motdTitle,charsmax(motdTitle),"Banned by Amxbans %s",VERSION)
-			//add(motdTitle,255,VERSION,0)
+			formatex(motdTitle,charsmax(motdTitle),"Banned by Amxbans %s",PLUGINVERSION)
+			//add(motdTitle,255,PLUGINVERSION,0)
 			show_motd(player, msg, motdTitle)
 			
 			new pid=player+200

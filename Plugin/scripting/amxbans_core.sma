@@ -34,14 +34,15 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define PLUGINNAME "AMXBans Core"
+#define PLUGINAUTHOR "YamiKaitou"
+new const PLUGINVERSION[] = "6.dev";
+
 #include <amxmodx>
 #include <amxmisc>
 #include <sqlx>
 
 new AdminCount;
-
-new PLUGINNAME[] 	= "AMXBans Core"
-new PLUGINVERSION[] 	= "6.0.5-dev"
 
 #define ADMIN_LOOKUP	(1<<0)
 #define ADMIN_NORMAL	(1<<1)
@@ -82,7 +83,7 @@ new Handle:info
 
 public plugin_init()
 {
-	register_plugin(PLUGINNAME, PLUGINVERSION, "YamiKaitou")
+	register_plugin(PLUGINNAME, PLUGINVERSION, PLUGINAUTHOR);
 
 	register_dictionary("admin.txt")
 	register_dictionary("common.txt")

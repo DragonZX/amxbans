@@ -90,12 +90,12 @@ public banmod_online_(failstate, Handle:query, error[], errnum, data[], size)
 	
 	if (!SQL_NumResults(query)) {
 		if ( get_pcvar_num(pcvar_debug) >= 1 ) {
-			server_print("[AMXBans] INSERT INTO `%s%s` VALUES ('', %i,'%s', '%s:%s', '%s', '', '%s', '', '', '0')", g_dbPrefix, tbl_serverinfo, timestamp, servername, g_ip, g_port, modname, amxbans_version)
-			log_amx("[AMXBans] INSERT INTO `%s%s` VALUES ('', %i,'%s', '%s:%s', '%s', '', '%s', '', '', '0')", g_dbPrefix, tbl_serverinfo, timestamp, servername, g_ip, g_port, modname, amxbans_version)
+			server_print("[AMXBans] INSERT INTO `%s%s` VALUES ('', %i,'%s', '%s:%s', '%s', '', '%s', '', '', '0')", g_dbPrefix, tbl_serverinfo, timestamp, servername, g_ip, g_port, modname, PLUGINVERSION)
+			log_amx("[AMXBans] INSERT INTO `%s%s` VALUES ('', %i,'%s', '%s:%s', '%s', '', '%s', '', '', '0')", g_dbPrefix, tbl_serverinfo, timestamp, servername, g_ip, g_port, modname, PLUGINVERSION)
 		}
 		
 		formatex(pquery, charsmax(pquery),"INSERT INTO `%s%s` (timestamp, hostname, address, gametype, amxban_version, amxban_menu) VALUES \
-			(%i, '%s', '%s:%s', '%s', '%s', 1)", g_dbPrefix, tbl_serverinfo, timestamp, servername, g_ip, g_port, modname, amxbans_version)
+			(%i, '%s', '%s:%s', '%s', '%s', 1)", g_dbPrefix, tbl_serverinfo, timestamp, servername, g_ip, g_port, modname, PLUGINVERSION)
 	} else {
 		new kick_delay_str[10]
 		SQL_ReadResult(query, 0, kick_delay_str, 9)
@@ -107,21 +107,21 @@ public banmod_online_(failstate, Handle:query, error[], errnum, data[], size)
 		}
 
 		if ( get_pcvar_num(pcvar_debug) >= 1 ) {
-			server_print("AMXBANS DEBUG] UPDATE `%s%s` SET timestamp=%i,hostname='%s',gametype='%s',amxban_version='%s', amxban_menu=1 WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, amxbans_version, g_ip, g_port)
-			log_amx("[AMXBANS DEBUG] UPDATE `%s%s` SET timestamp=%i,hostname='%s',gametype='%s',amxban_version='%s', amxban_menu=1 WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, amxbans_version, g_ip, g_port)
+			server_print("AMXBANS DEBUG] UPDATE `%s%s` SET timestamp=%i,hostname='%s',gametype='%s',amxban_version='%s', amxban_menu=1 WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, PLUGINVERSION, g_ip, g_port)
+			log_amx("[AMXBANS DEBUG] UPDATE `%s%s` SET timestamp=%i,hostname='%s',gametype='%s',amxban_version='%s', amxban_menu=1 WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, PLUGINVERSION, g_ip, g_port)
 		}
-		formatex(pquery, charsmax(pquery), "UPDATE `%s%s` SET timestamp='%i',hostname='%s',gametype='%s',amxban_version='%s', amxban_menu='1' WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, amxbans_version, g_ip, g_port)
+		formatex(pquery, charsmax(pquery), "UPDATE `%s%s` SET timestamp='%i',hostname='%s',gametype='%s',amxban_version='%s', amxban_menu='1' WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, PLUGINVERSION, g_ip, g_port)
 	
 	}
 	new data[1]
 
-	//formatex(pquery, charsmax(pquery), "UPDATE `%s%s` SET timestamp='%i',hostname='%s',gametype='%s',amxban_version='%s', amxban_menu='1' WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, amxbans_version, g_ip, g_port)
+	//formatex(pquery, charsmax(pquery), "UPDATE `%s%s` SET timestamp='%i',hostname='%s',gametype='%s',amxban_version='%s', amxban_menu='1' WHERE address = '%s:%s'", g_dbPrefix, tbl_serverinfo, timestamp, servername, modname, PLUGINVERSION, g_ip, g_port)
 
 	data[0] = id
 
 	SQL_ThreadQuery(g_SqlX, "banmod_online_update", pquery, data, 1)
 	
-	log_amx("[AMXBans] %L", LANG_SERVER, "SQL_BANMOD_ONLINE", VERSION)
+	log_amx("[AMXBans] %L", LANG_SERVER, "SQL_BANMOD_ONLINE", PLUGINVERSION)
 	
 	return PLUGIN_CONTINUE
 }

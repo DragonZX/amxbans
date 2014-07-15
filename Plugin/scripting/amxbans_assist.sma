@@ -34,20 +34,20 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define PLUGINNAME "AMXBans Assist"
+#define PLUGINAUTHOR "YamiKaitou"
+new const PLUGINVERSION[] = "6.dev";
 
 #pragma semicolon 1
 
 #include <amxmodx>
-
-new PLUGINNAME[]    = "AMXBans Assist";
-new PLUGINVERSION[] = "6.0.5-dev";
 
 // Troubleshooting files, located in root folder
 new const FILEdumpadmins[] = "dumpadmins.txt";
 
 public plugin_init()
 {
-    register_plugin(PLUGINNAME, PLUGINVERSION, "YamiKaitou");
+    register_plugin(PLUGINNAME, PLUGINVERSION, PLUGINAUTHOR);
     
     register_srvcmd("amxbans", "cmdAmxbans");
 }
